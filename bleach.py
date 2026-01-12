@@ -1,6 +1,11 @@
 import pygame
 import time
 
+#Issue:
+"""
+at some instance at the right side of the screen when the enemy and the player
+collide player falls down to the ground 
+"""
 pygame.init()
 # Screen setup
 screen_width = 1200
@@ -85,28 +90,27 @@ class Player:
     def draw(self, win):
         # Select current sprite
         framesPerImg = 3
+        limit=0
         sprite = jumpLeft[0]
         
         if not self.standing and not self.isJump and not self.attacking:
             self.stancephase=0
             if self.dashing:
                 if self.facing==1:
-                    # limit = len(dashRight) 
-                    # sprite = dashRight[self.dashCount // framesPerImg]
-                    sprite= dashRight
-                
+                    limit = len(dashRight) 
+                    sprite = dashRight[self.dashCount // framesPerImg]
                 else:
-                    # limit = len(dashLeft) 
-                    # sprite = dashLeft[self.dashCount // framesPerImg]
-                    sprite= dashLeft
-                # self.dashCount += 1
-                # if self.dashCount +1>= limit:
-                #     self.dashCount = 0
+                    limit = len(dashLeft) 
+                    sprite = dashLeft[self.dashCount // framesPerImg]
+                self.dashCount += 1
+                if self.dashCount +1>= limit:
+                    self.dashCount = 0
                 
-                # self.dashTimer-=1
-                # if self.dashTimer<=0:
-                #     self.dashing= False
-                #     self.dashCount=0
+                self.dashTimer-=1
+                if self.dashTimer<=0:
+                    self.dashing= False
+                    self.dashCount=0
+
             if not self.down:
                 if self.left:
                     limit = len(walkLeft) * framesPerImg
@@ -114,9 +118,9 @@ class Player:
                 elif self.right:
                     limit = len(walkRight) * framesPerImg
                     sprite = walkRight[self.walkCount // framesPerImg]
+                self.walkCount += 1
                 if self.walkCount +1 >= limit:
                     self.walkCount = 0
-                self.walkCount += 1
             else:
                 if self.facing==1:
                     limit= len(standUpRight)* framesPerImg
@@ -337,7 +341,7 @@ enemy = Enemy(110, 149, 560, 500)
 def main():
     run = True
     while run:
-        clock.tick(24)
+        clock.tick(30)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -411,8 +415,6 @@ def main():
         else:
             enemy.hit= False
             player.stationaryPhase= False
-           
-    
         redrawwindow()
 
     pygame.quit()
