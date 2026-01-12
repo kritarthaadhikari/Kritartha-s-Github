@@ -5,7 +5,12 @@ import time
 """
 at some instance at the right side of the screen when the enemy and the player
 collide player falls down to the ground 
+
+even if player isnt near the enemy it still gets hit just because of the hitbox collision
 """
+#But a solution i thought of is defining another variable called self.arm or smthg like
+#that and we check the collision between them if it happens player gets hit 
+
 pygame.init()
 # Screen setup
 screen_width = 1200
