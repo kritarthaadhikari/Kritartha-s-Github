@@ -111,11 +111,10 @@ class Player:
                 if self.left:
                     limit = len(walkLeft) * framesPerImg
                     sprite = walkLeft[self.walkCount // framesPerImg]
-
                 elif self.right:
                     limit = len(walkRight) * framesPerImg
                     sprite = walkRight[self.walkCount // framesPerImg]
-                if self.walkCount +1>= limit:
+                if self.walkCount +1 >= limit:
                     self.walkCount = 0
                 self.walkCount += 1
             else:
@@ -127,11 +126,11 @@ class Player:
                     sprite= standUpLeft[self.downCount// framesPerImg]
                 if self.downCount+1 >=limit:
                     self.downCount=0
+                    self.down= False
                 self.downCount+=1
         
-            
+    
         elif self.attacking:
-            framesPerImg=4
             if self.facing==1:
                 limit= len(attackRight)*framesPerImg
                 sprite= attackRight[self.attackCount// framesPerImg]
@@ -154,7 +153,10 @@ class Player:
                 self.spjumpCount=0
             self.spjumpCount += 1
 
-        elif self.stationaryPhase:
+        elif self.stationaryPhase: 
+            # for the player to stay down for a while
+            # just so player doesnt stand up right again like nthg happened
+
             if self.facing==-1:
                 limit= len(hitLeft)*framesPerImg
                 sprite= hitLeft[self.stationaryPhaseCount// framesPerImg]
@@ -166,7 +168,7 @@ class Player:
                 self.down= True
             self.stationaryPhaseCount+=1
 
-        elif self.gotHit:
+        elif self.gotHit: #for the damage taking animation 
             if self.facing==1:
                 limit= len(getHitRight)*framesPerImg
                 sprite= getHitRight[self.getHitCount//framesPerImg]
@@ -178,6 +180,7 @@ class Player:
                 self.getHitCount=0
                 self.gotHit= False
                 self.stationaryPhase= True
+                self.down= True
                 self.stationaryPhaseCount=0
             self.getHitCount+=1
 
@@ -194,7 +197,6 @@ class Player:
                 if self.stanceCount +1>= limit:
                     self.stanceCount=0
                     self.stancephase=1
-
             else:
                 if self.facing==-1:
                     limit = len(stanceFinalLeft)* framesPerImg
