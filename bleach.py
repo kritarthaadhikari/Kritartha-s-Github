@@ -6,6 +6,8 @@ import time
 at some instance at the right side of the screen when the enemy and the player
 collide player falls down to the ground 
 
+i dont know what happened but my player landed a few pixels up its initial position and 
+the player randomly falls down doesnt get hit tho 
 even if player isnt near the enemy it still gets hit just because of the hitbox collision
 """
 #But a solution i thought of is defining another variable called self.arm or smthg like
@@ -250,7 +252,7 @@ class Enemy:
         self.attackCount=0
         self.lastattackTimer= time.time()
         self.attacking= False
-        self.hitbox= pygame.Rect(self.x+10, self.feet-100,30, 125 )
+        self.hitbox= pygame.Rect(self.x+10, self.feet-100,70, 125 )
         self.hit= False
         self.hitCount=0
     
@@ -285,10 +287,10 @@ class Enemy:
 
         if not self.attacking:
             if self.facing==1:
-                self.hitbox= pygame.Rect(self.x+50, self.feet-100,50, 135 )#Adding it here updates the self.hitbox
+                self.hitbox= pygame.Rect(self.x+50, self.feet-100,70, 135 )#Adding it here updates the self.hitbox
             #when the character moves
             elif self.facing==-1:
-                self.hitbox= pygame.Rect(self.x+10, self.feet-100,50, 135 )
+                self.hitbox= pygame.Rect(self.x+10, self.feet-100,70, 135 )
         else:
             if self.facing==1:
                 self.hitbox= pygame.Rect(self.x+40, self.feet-40,90, 60 )
@@ -329,7 +331,7 @@ def redrawwindow():
     pygame.display.update()
 
 def hit():
-    pass
+   print("Hit")
 
 # Clock and player initialization
 clock = pygame.time.Clock()
@@ -411,6 +413,8 @@ def main():
                         player.hit()
                 #detects player enemy collision 
             # will be used for player health decrement
+            elif player.attacking:
+                hit()
         else:
             enemy.hit= False
             player.stationaryPhase= False
