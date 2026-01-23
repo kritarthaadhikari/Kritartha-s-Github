@@ -40,7 +40,7 @@ jumpRight= [pygame.image.load(f'jump{i}.png') for i in range(0,10)]
 jumpLeft= [pygame.transform.flip(img, True, False) for img in jumpRight]
 dashRight= pygame.image.load('dash2.png')
 dashLeft= pygame.transform.flip(dashRight, True, False)
-attackRight= [pygame.image.load(f'attack{i}.png') for i in range(1,7)]
+attackRight= [pygame.image.load(f'nattack{i}.png') for i in range(0,6)]
 attackLeft= [pygame.transform.flip(img, True, False) for img in attackRight]
 getHitRight= [pygame.image.load(f'hit{i}.png') for i in range(0,10)]
 getHitLeft= [pygame.transform.flip(img, True, False) for img in getHitRight]
@@ -141,7 +141,7 @@ class Player:
                 self.downCount+=1
     
         elif self.attacking:
-            self.x+= self.facing* 2
+            self.x+= self.facing
             if self.facing==1:
                 limit= len(attackRight)*framesPerImg
                 sprite= attackRight[self.attackCount// framesPerImg]
@@ -180,6 +180,7 @@ class Player:
             self.stationaryPhaseCount+=1
 
         elif self.gotHit: #for the damage taking animation 
+            draw_y= 500
             if self.facing==1:
                 limit= len(getHitRight)*framesPerImg
                 sprite= getHitRight[self.getHitCount//framesPerImg]
@@ -287,15 +288,15 @@ class Enemy:
 
         if not self.attacking:
             if self.facing==1:
-                self.hitbox= pygame.Rect(self.x+50, self.feet-100,70, 135 )#Adding it here updates the self.hitbox
+                self.hitbox= pygame.Rect(self.x+30, self.feet-100,70, 135 )#Adding it here updates the self.hitbox
             #when the character moves
             elif self.facing==-1:
                 self.hitbox= pygame.Rect(self.x+10, self.feet-100,70, 135 )
         else:
             if self.facing==1:
-                self.hitbox= pygame.Rect(self.x+40, self.feet-40,90, 60 )
+                self.hitbox= pygame.Rect(self.x+10, self.feet-40,130, 60 )
             else:
-                self.hitbox= pygame.Rect(self.x+10, self.feet-40,90, 60 )
+                self.hitbox= pygame.Rect(self.x, self.feet-40,130, 60 )
         
         if self.hit:
             if self.facing==1:
@@ -335,7 +336,7 @@ def hit():
 
 # Clock and player initialization
 clock = pygame.time.Clock()
-player = Player(64, 64, 10, 500)
+player = Player(200, 200, 10, 500)
 enemy = Enemy(110, 149, 560, 500)
 
 # Main game loop
@@ -418,6 +419,7 @@ def main():
         else:
             enemy.hit= False
             player.stationaryPhase= False
+            player.gotHit=False
         redrawwindow()
 
     pygame.quit()
