@@ -2,16 +2,17 @@ import pygame
 import time
 
 #Issue:
-"""
-at some instance at the right side of the screen when the enemy and the player
-collide player falls down to the ground 
+""" 
 new error: up and L/R glitches animation and theres glitches w jumping during hitbox collisions
-
 i dont know what happened but my player landed a few pixels up its initial position and 
 the player randomly falls down doesnt get hit tho 
 """
-#But a solution i thought of is defining another variable called self.arm or smthg like
-#that and we check the collision between them if it happens player gets hit 
+
+#To be fixed
+#Dash
+"""Fixed"""
+# at some instance at the right side of the screen when the enemy and the player
+# collide player falls down to the ground
 
 pygame.init()
 # Screen setup
@@ -38,18 +39,18 @@ stanceFinalRight = [pygame.image.load(f'stanced1{i}.png') for i in range(7,10)]
 stanceFinalLeft= [pygame.transform.flip(img, True, False) for img in stanceFinalRight]
 jumpRight= [pygame.image.load(f'jump{i}.png') for i in range(0,10)]
 jumpLeft= [pygame.transform.flip(img, True, False) for img in jumpRight]
-dashRight= pygame.image.load('dash2.png')
-dashLeft= pygame.transform.flip(dashRight, True, False)
+dashRight=[ pygame.image.load(f'dash{i}.png') for i in range(1,4)]
+dashLeft= [pygame.transform.flip(img, True, False) for img in dashRight]
 attackRight= [pygame.image.load(f'nattack{i}.png') for i in range(0,6)]
 attackLeft= [pygame.transform.flip(img, True, False) for img in attackRight]
 getHitRight= [pygame.image.load(f'hit{i}.png') for i in range(0,10)]
 getHitLeft= [pygame.transform.flip(img, True, False) for img in getHitRight]
 hitRight= [pygame.image.load(f'hit{i}.png') for i in range(5,10)]
 hitLeft=[pygame.transform.flip(img, True, False) for img in hitRight]
-standUpRight= [pygame.image.load('stanced1.png'),pygame.image.load('stanced2.png'),
-    pygame.image.load('jump1.png'), pygame.image.load('jump2.png'),
-          pygame.image.load('jump7.png'), pygame.image.load('jump8.png'),
-    pygame.image.load('jump9.png')]
+standUpRight= [pygame.image.load('stanced1.png'),
+    pygame.image.load('stanced2.png'),pygame.image.load('jump1.png'), 
+    pygame.image.load('jump2.png'),pygame.image.load('jump7.png'),
+    pygame.image.load('jump8.png'),pygame.image.load('jump9.png')]
 standUpLeft= [pygame.transform.flip(img, True, False) for img in standUpRight]
 
 #Enemy
@@ -102,7 +103,9 @@ class Player:
         
         if not self.standing and not self.isJump and not self.attacking:
             self.stancephase=0
+            print(self.dashing)
             if self.dashing:
+                print("HELLO")
                 if self.facing==1:
                     limit = len(dashRight) 
                     sprite = dashRight[self.dashCount // framesPerImg]
@@ -118,7 +121,7 @@ class Player:
                     self.dashing= False
                     self.dashCount=0
 
-            if not self.down:
+            elif not self.down:
                 if self.left:
                     limit = len(walkLeft) * framesPerImg
                     sprite = walkLeft[self.walkCount // framesPerImg]
@@ -253,7 +256,8 @@ class Enemy:
         self.attackCount=0
         self.lastattackTimer= time.time()
         self.attacking= False
-        self.hitbox= pygame.Rect(self.x+10, self.feet-100,70, 125 )
+        self.body_hitbox= pygame.Rect(self.x+10, self.feet-100,70, 125 )
+        self.attack_hitbox= pygame.Rect(self.x+10, self.feet-100, 50, 60)
         self.hit= False
         self.hitCount=0
     
@@ -288,16 +292,20 @@ class Enemy:
 
         if not self.attacking:
             if self.facing==1:
-                self.hitbox= pygame.Rect(self.x+30, self.feet-100,70, 135 )#Adding it here updates the self.hitbox
-            #when the character moves
+                self.body_hitbox= pygame.Rect(self.x+30, self.feet-100,70, 135 )
+                #Adding it here updates the self.hitbox when the character moves
+         
             elif self.facing==-1:
-                self.hitbox= pygame.Rect(self.x+10, self.feet-100,70, 135 )
+                self.body_hitbox= pygame.Rect(self.x+10, self.feet-100,70, 135 )
         else:
             if self.facing==1:
-                self.hitbox= pygame.Rect(self.x+10, self.feet-40,130, 60 )
+                self.body_hitbox= pygame.Rect(self.x+10, self.feet-40,130, 60 )
+                self.attack_hitbox= pygame.Rect(self.x+100, self.feet-30,50, 60)
             else:
-                self.hitbox= pygame.Rect(self.x, self.feet-40,130, 60 )
-        
+                self.body_hitbox= pygame.Rect(self.x, self.feet-40,130, 60 )
+                self.attack_hitbox= pygame.Rect(self.x, self.feet-30,50, 60)
+            #Enemy's attack hitbox
+            pygame.draw.rect(win, (0,255,0), self.attack_hitbox, 2)
         if self.hit:
             if self.facing==1:
                 limit= len(attackSeenRight)* framesPerImg
@@ -308,8 +316,8 @@ class Enemy:
             self.hitCount+=1
             if self.hitCount+1 >=limit:
                 self.hitCount=0
-
-        pygame.draw.rect(win, (255,0,0), self.hitbox,2)#2 is for border thickness
+        #Enemy's hitbox
+        pygame.draw.rect(win, (255,0,0), self.body_hitbox,2)#2 is for border thickness
         sprite_height= sprite.get_height()
         draw_y= self.feet- sprite_height+50
         win.blit(sprite , (self.x, draw_y))
@@ -323,20 +331,19 @@ class Enemy:
             self.x+= self.facing* self.vel
         self.draw(win)
     
-
 # Redraw function
 def redrawwindow():
     win.blit(bg, (0, 0))
-    player.draw(win)
     enemy.move()
+    player.draw(win)
     pygame.display.update()
 
 def hit():
-   print("Hit")
+   print("Hit")#LAter attach it to player.attacking and set it as plus 1 when the entire animation is complete
 
 # Clock and player initialization
 clock = pygame.time.Clock()
-player = Player(200, 200, 10, 500)
+player = Player(64, 64, 10, 500)
 enemy = Enemy(110, 149, 560, 500)
 
 # Main game loop
@@ -356,9 +363,11 @@ def main():
                 
                 elif event.key== pygame.K_LSHIFT:
                    if player.vel < player.x < screen_width - player.width - player.vel:
-                        player.x+= player.facing*70
+                        player.x+= player.facing*30
                         player.standing= False
                         player.dashing= True
+                        player.left= False
+                        player.right= False
             
         keys = pygame.key.get_pressed()
         # Left/right movement
@@ -382,7 +391,6 @@ def main():
 
             else:
                 player.standing = True
-                player.dashing= False
                 player.walkCount = 0
                 player.dashCount=0
 
@@ -406,8 +414,8 @@ def main():
                 player.jumpCount = 11
                 player.isJump = False
         
-        if player.hitbox.colliderect(enemy.hitbox):
-            if enemy.attacking:
+        if player.hitbox.colliderect(enemy.body_hitbox):
+            if enemy.attacking and enemy.attack_hitbox.colliderect(player.hitbox):
                 if enemy.attackCount>=21 and enemy.attackCount<24:
                     if not player.down:
                         enemy.hit= True
