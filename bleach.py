@@ -49,6 +49,8 @@ kickRight= [pygame.image.load(f'kick{i}.png') for i in range(0,3)]
 kickLeft= [pygame.transform.flip(img, True, False) for img in kickRight]
 attackSeenRight= [pygame.image.load(f'hattack{i}.png') for i in range(7,10)]
 attackSeenLeft= [pygame.transform.flip(img, True, False) for img in attackSeenRight]
+fallRight= [pygame.image.load(f'fall{i}.png') for i in range(1,5)]
+fallLeft= [pygame.transform.flip(img, True, False) for img in fallRight]
 
 # Player class
 class Player:
@@ -81,6 +83,7 @@ class Player:
         self.stationaryPhaseCount=0
         self.down= False
         self.downCount= 0
+        self.health= 120
 
     def draw(self, win):
         # Select current sprite
@@ -214,7 +217,7 @@ class Player:
 
         # Draw sprite using feet position
         self.hitbox= pygame.Rect(self.x+10, self.feet_y-4,50, 52 )
-        pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+        # pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
 
         # Get the width and height of the current frame
         sprite_height = sprite.get_height()
@@ -247,70 +250,95 @@ class Enemy:
         self.attack_hitbox= pygame.Rect(self.x+10, self.feet-100, 50, 60)
         self.hit= False
         self.hitCount=0
+        self.health=10
+        self.fallCount= 0
+        self.fall= False
     
     def draw(self,win):
         framesPerImg=4
         current= time.time()
-        if current- self.lastattackTimer > 3.0:
-            self.attacking= True
-            if not self.hit:
-                if self.facing==1:
-                    limit= len(HattackRight)*framesPerImg
-                    sprite= HattackRight[self.attackCount//framesPerImg]
-                elif self.facing==-1:
-                    limit= len(HattackLeft)*framesPerImg
-                    sprite= HattackLeft[self.attackCount//framesPerImg]
-                self.attackCount+=1
-                if self.attackCount+1>=limit:
-                    self.attackCount=0 
-                    self.attacking= False
-                    self.lastattackTimer= time.time()
-            
-        else:       
-            if self.facing==-1:
-                limit= len(HwalkLeft)* framesPerImg
-                sprite= HwalkLeft[self.walkCount//framesPerImg]
-            elif self.facing==1:
-                limit= len(HwalkRight)*framesPerImg
-                sprite= HwalkRight[self.walkCount//framesPerImg]
-            self.walkCount+=1
-            if self.walkCount+1>= limit:
-                self.walkCount=0
+        if not self.fall:
+            if current- self.lastattackTimer > 3.0:
+                self.attacking= True
+                if not self.hit:
+                    if self.facing==1:
+                        limit= len(HattackRight)*framesPerImg
+                        sprite= HattackRight[self.attackCount//framesPerImg]
+                    elif self.facing==-1:
+                        limit= len(HattackLeft)*framesPerImg
+                        sprite= HattackLeft[self.attackCount//framesPerImg]
+                    self.attackCount+=1
+                    if self.attackCount+1>=limit:
+                        self.attackCount=0 
+                        self.attacking= False
+                        self.lastattackTimer= time.time()
+                
+            else:       
+                if self.facing==-1:
+                    limit= len(HwalkLeft)* framesPerImg
+                    sprite= HwalkLeft[self.walkCount//framesPerImg]
+                elif self.facing==1:
+                    limit= len(HwalkRight)*framesPerImg
+                    sprite= HwalkRight[self.walkCount//framesPerImg]
+                self.walkCount+=1
+                if self.walkCount+1>= limit:
+                    self.walkCount=0
 
-        if not self.attacking:
-            if self.facing==1:
-                self.body_hitbox= pygame.Rect(self.x+30, self.feet-100,70, 135 )
-                #Adding it here updates the self.hitbox when the character moves
-         
-            elif self.facing==-1:
-                self.body_hitbox= pygame.Rect(self.x+10, self.feet-100,70, 135 )
-        else:
-            if self.facing==1:
-                self.body_hitbox= pygame.Rect(self.x+10, self.feet-40,130, 60 )
-                self.attack_hitbox= pygame.Rect(self.x+100, self.feet-30,50, 60)
+            if not self.attacking:
+                if self.facing==1:
+                    self.body_hitbox= pygame.Rect(self.x+30, self.feet-100,70, 135 )
+                    #Adding it here updates the self.hitbox when the character moves
+            
+                elif self.facing==-1:
+                    self.body_hitbox= pygame.Rect(self.x+10, self.feet-100,70, 135 )
             else:
-                self.body_hitbox= pygame.Rect(self.x, self.feet-40,130, 60 )
-                self.attack_hitbox= pygame.Rect(self.x, self.feet-30,50, 60)
-            #Enemy's attack hitbox
-            pygame.draw.rect(win, (0,255,0), self.attack_hitbox, 2)
-        if self.hit:
-            if self.facing==1:
-                limit= len(attackSeenRight)* framesPerImg
-                sprite= attackSeenRight[self.hitCount//framesPerImg]
-            else:
-                limit= len(attackSeenLeft)* framesPerImg
-                sprite= attackSeenLeft[self.hitCount//framesPerImg]
-            self.hitCount+=1
-            if self.hitCount+1 >=limit:
-                self.hitCount=0
+                if self.facing==1:
+                    self.body_hitbox= pygame.Rect(self.x+10, self.feet-40,130, 60 )
+                    self.attack_hitbox= pygame.Rect(self.x+100, self.feet-30,50, 60)
+                else:
+                    self.body_hitbox= pygame.Rect(self.x, self.feet-40,130, 60 )
+                    self.attack_hitbox= pygame.Rect(self.x, self.feet-30,50, 60)
+                #Enemy's attack hitbox
+                #pygame.draw.rect(win, (0,255,0), self.attack_hitbox, 2)
+            if self.hit:
+                if self.facing==1:
+                    limit= len(attackSeenRight)* framesPerImg
+                    sprite= attackSeenRight[self.hitCount//framesPerImg]
+                else:
+                    limit= len(attackSeenLeft)* framesPerImg
+                    sprite= attackSeenLeft[self.hitCount//framesPerImg]
+                self.hitCount+=1
+                if self.hitCount+1 >=limit:
+                    self.hitCount=0
+            #HP
+            pygame.draw.rect(win,(255,0,0),(self.body_hitbox[0], self.body_hitbox[1]-20,70,10))
+            pygame.draw.rect(win,(0,255,0),(self.body_hitbox[0], self.body_hitbox[1]-20,70-(700-self.health)/10,10))
+                
+        if self.health==0 and not self.fall:
+                if self.facing==1:
+                    limit= len(fallRight)*framesPerImg
+                    sprite= fallRight[self.fallCount// framesPerImg]
+                elif self.facing==-1:
+                    limit= len(fallLeft)*framesPerImg
+                    sprite= fallLeft[self.fallCount// framesPerImg]
+                if self.fallCount+1>= limit:
+                    self.fallCount=0
+                    self.fall= True
+                self.fallCount+=1
+        elif self.fall:
+                if self.facing==1:
+                    sprite= fallRight[3]
+                else:
+                    sprite= fallLeft[3]
+
         #Enemy's hitbox
-        pygame.draw.rect(win, (255,0,0), self.body_hitbox,2)#2 is for border thickness
+        # pygame.draw.rect(win, (255,0,0), self.body_hitbox,2)#2 is for border thickness
         sprite_height= sprite.get_height()
         draw_y= self.feet- sprite_height+50
         win.blit(sprite , (self.x, draw_y))
     
     def move(self):
-        if not self.attacking:
+        if not self.attacking and not self.health==0:
             if self.x==self.end[1]:
                 self.facing=-1
             elif self.x==self.end[0]:
@@ -326,7 +354,8 @@ def redrawwindow():
     pygame.display.update()
 
 def hit():
-   print("Hit")#LAter attach it to player.attacking and set it as plus 1 when the entire animation is complete
+   enemy.health-=10
+   print(enemy.health)
 
 # Clock and player initialization
 clock = pygame.time.Clock()
@@ -406,7 +435,7 @@ def main():
                 player.feet_y=500
         
         if player.hitbox.colliderect(enemy.body_hitbox):
-            if enemy.attacking and enemy.attack_hitbox.colliderect(player.hitbox):
+            if enemy.attacking and player.hitbox.colliderect(enemy.attack_hitbox):
                 if enemy.attackCount>=21 and enemy.attackCount<24:
                     if not player.down:
                         enemy.hit= True
@@ -414,7 +443,12 @@ def main():
                 #detects player enemy collision 
             # will be used for player health decrement
             elif player.attacking:
-                hit()
+                if player.attackCount==0:
+                    hit()
+            else:
+                enemy.hit= False
+                player.stationaryPhase= False
+                player.gotHit=False
         else:
             enemy.hit= False
             player.stationaryPhase= False
