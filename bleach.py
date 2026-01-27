@@ -177,8 +177,6 @@ class Player:
             
         elif self.isJump:
             if self.facing==1:
-                print(self.jumpCount)
-                print(self.spjumpCount)
                 limit = len(jumpRight)* framesPerImg
                 sprite= jumpRight[self.spjumpCount//framesPerImg]
             else:
@@ -186,7 +184,6 @@ class Player:
                 sprite= jumpLeft[self.spjumpCount//framesPerImg]
             if self.spjumpCount +1>= limit:
                 self.spjumpCount=0
-             
             self.spjumpCount += 1
         else:
             if self.stancephase==0: 
@@ -224,7 +221,6 @@ class Player:
         win.blit(sprite, (self.x, draw_y))
 
     def hit(self):
-        print("hit")
         if not self.stationaryPhase:
             self.gotHit=True
             self.attacking= False
