@@ -25,6 +25,7 @@ pygame.mixer.music.load('on the precipice of death.mp3')
 pygame.mixer.music.play(-1)
 #0 for once, 1 for twice 2 for thrice,etc
 
+attackOriginal= [pygame.image.load(f'nattack1{i}.png').convert_alpha() for i in range (0,6)]
 # Sprites
 #Player
 walkRight = [pygame.image.load(f'run{i}.png') for i in range(1, 9)]
@@ -37,7 +38,7 @@ jumpRight= [pygame.image.load(f'jump{i}.png') for i in range(0,10)]
 jumpLeft= [pygame.transform.flip(img, True, False) for img in jumpRight]
 dashRight=[ pygame.image.load(f'dash{i}.png') for i in range(1,4)]
 dashLeft= [pygame.transform.flip(img, True, False) for img in dashRight]
-attackRight= [pygame.image.load(f'nattack{i}.png') for i in range(0,6)]
+attackRight= [pygame.image.load(f'nattack{i}.png') for i in range (0,6)]
 attackLeft= [pygame.transform.flip(img, True, False) for img in attackRight]
 getHitRight= [pygame.image.load(f'hit{i}.png') for i in range(0,10)]
 getHitLeft= [pygame.transform.flip(img, True, False) for img in getHitRight]
@@ -48,6 +49,8 @@ standUpRight= [pygame.image.load('stanced1.png'),
     pygame.image.load('jump2.png'),pygame.image.load('jump7.png'),
     pygame.image.load('jump8.png'),pygame.image.load('jump9.png')]
 standUpLeft= [pygame.transform.flip(img, True, False) for img in standUpRight]
+getsugatenshoRight =[pygame.image.load(f'getsugatensho{i}.png') for i in range(1,15)]
+getsugatenshoLeft =[pygame.transform.flip(img, True, False) for img in getsugatenshoRight]
 
 #Enemy
 HwalkRight=[pygame.image.load(f'walk{i}.png') for i in range(2,10)]
@@ -93,6 +96,8 @@ class Player:
         self.down= False
         self.downCount= 0
         self.health= 120
+        self.signature= False
+        self.signatureCount=0
 
     def draw(self, win):
         # Select current sprite
@@ -173,18 +178,30 @@ class Player:
             self.getHitCount+=1
 
         elif self.attacking:
-            self.x+= self.facing
-            if self.facing==1:
+            if not self.signature:
+                self.x+= self.facing/2
                 limit= len(attackRight)*framesPerImg
-                sprite= attackRight[self.attackCount// framesPerImg]
+                if self.facing==1:
+                    sprite= attackRight[self.attackCount// framesPerImg]
+                else:
+                    sprite= attackLeft[self.attackCount// framesPerImg]
+                self.attackCount+=1
+                if self.attackCount+1 >= limit:
+                    self.attackCount=0
+                    self.attacking=False
             else:
-                limit= len(attackLeft)*framesPerImg
-                sprite= attackLeft[self.attackCount// framesPerImg]
-            self.attackCount+=1
-            if self.attackCount+1 >= limit:
-                self.attackCount=0
-                self.attacking=False
-            
+                limit= len(getsugatenshoRight)*framesPerImg
+                if self.facing==1:
+                    sprite= getsugatenshoRight[self.signatureCount// framesPerImg]
+                else:
+                    limit= len(getsugatenshoLeft)*framesPerImg
+                    sprite= getsugatenshoLeft[self.signatureCount// framesPerImg]
+                self.signatureCount+=1
+                if self.signatureCount+1>=limit:
+                    self.signatureCount=0
+                    self.signature= False
+                    self.attacking= False
+
         elif self.isJump:
             if self.facing==1:
                 limit = len(jumpRight)* framesPerImg
@@ -223,12 +240,12 @@ class Player:
         # Draw sprite using feet position
         self.hitbox= pygame.Rect(self.x+10, self.feet_y-4,50, 52 )
         # pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
-
+        draw_x= self.x -sprite.get_width()+50
         # Get the width and height of the current frame
         sprite_height = sprite.get_height()
         #didnt work sadly for the x coordinate
         draw_y = self.feet_y - sprite_height+50
-        win.blit(sprite, (self.x, draw_y))
+        win.blit(sprite, (draw_x, draw_y))
 
     def hit(self):
         if not self.stationaryPhase:
@@ -257,11 +274,14 @@ class Enemy:
         self.health=500
         self.fallCount= 0
         self.fall= False
+        self.damage= False
     
     def draw(self,win):
         framesPerImg=4
         current= time.time()
         if not self.fall:
+            if self.damage:
+                pass
             if current- self.lastattackTimer > 3.0:
                 self.attacking= True
                 if not self.hit:
@@ -399,8 +419,13 @@ def main():
                         player.dashCount=0
                         player.left= False
                         player.right= False
-            
-            
+                
+                elif event.key== pygame.K_z:
+                    player.standing= False
+                    player.signature= True
+                    player.attacking= True
+                    player.signatureCount=0
+                    
         keys = pygame.key.get_pressed()
         # Left/right movement
         if not player.attacking:
