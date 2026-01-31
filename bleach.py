@@ -98,6 +98,8 @@ class Player:
         self.health= 120
         self.signature= False
         self.signatureCount=0
+        self.staminaGauge=100
+        self.ultimateGauge=200
 
     def draw(self, win):
         # Select current sprite
@@ -389,10 +391,11 @@ def redrawwindow():
 def hudPannel():
     pygame.draw.rect(win,(255,0,0),(212,59,212,23))
     pygame.draw.rect(win,(0,255,0),(212,59,212- 53*(120-player.health)/30,22 ))
+    pygame.draw.rect(win,(255,255,0),(175,89,188-(100-player.staminaGauge)*1.88,14))
+    pygame.draw.rect(win,(0,210,255),(239,116,(200-player.ultimateGauge)*1.8,18))
     win.blit(hud_pannel, (10,10))
 
 def hit():
-     
     player.health-=1
     print(player.health)
 
@@ -401,6 +404,8 @@ def main():
     run = True
     while run:
         clock.tick(22)
+        if player.staminaGauge<100:
+            player.staminaGauge+=1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -412,19 +417,21 @@ def main():
                     player.stancephase=0
                 
                 elif event.key== pygame.K_LSHIFT:
-                   if player.vel < player.x < screen_width - player.width - player.vel:
+                   if player.vel < player.x < screen_width - player.width - player.vel and player.staminaGauge>=20:
                         player.x+= player.facing*40
                         player.standing= False
                         player.dashing= True
                         player.dashCount=0
                         player.left= False
                         player.right= False
+                        player.staminaGauge-=20
                 
-                elif event.key== pygame.K_z:
+                elif event.key== pygame.K_z and player.staminaGauge>=80:
                     player.standing= False
                     player.signature= True
                     player.attacking= True
                     player.signatureCount=0
+                    player.staminaGauge-=80
                     
         keys = pygame.key.get_pressed()
         # Left/right movement
@@ -450,7 +457,6 @@ def main():
                     player.dashCount=0
                 player.walkCount = 0
                
-
         # Jump logic
         if not player.isJump:
             if keys[pygame.K_UP]:
@@ -495,6 +501,5 @@ def main():
             player.stationaryPhase= False
             player.gotHit=False
         redrawwindow()
-
     pygame.quit()
 main()
